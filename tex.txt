@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css" integrity="sha512-8RxmFOVaKQe/xtg6lbscU9DU0IRhURWEuiI0tXevv+lXbAHfkpamD4VKFQRto9WgfOJDwOZ74c/s9Yesv3VvIQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css" integrity="sha512-d0olNN35C6VLiulAobxYHZiXJmq+vl+BGIgAxQtD5+kqudro/xNMvv2yIHAciGHpExsIbKX3iLg+0B6d0k4+ZA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Betting Dashboard</title>
+  <style>
+    .body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .menu {
+
+      background: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+    }
+
+    .textcolor {
+      background-image: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+      -webkit-background-clip: text;
+      /* For webkit-based browsers */
+      background-clip: text;
+      color: transparent;
+    }
+    .footer{
+     
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+}
+.tradecolor{
+  background-color: #ee7724;
+}
+    
+  </style>
+</head>
+
+<body>
+  <nav class="menu w-full text-white flex justify-between px-4 py-2 font-bold">
+    <div>
+
+      <a href="/">Trail</a>
+
+    </div>
+    <div class="space-x-2">
+
+      <a href="/signin">Login</a>
+      <a href="/signup">Register</a>
+    </div>
+  </nav>
+
+  <div class="textcolor py-2 text-center bg-white">
+    <p class="textcolor text-xl font-semibold">FREE TRAIL AVAILABLE</p>
+
+  </div>
+  <div class="chart-container ">
+    <canvas id="randomChart" width="600" height="400"></canvas>
+  </div>
+
+  <div class="w-full p-4 ">
+    <form id="betForm" action="#" enctype="application/x-www-form-urlencoded" method="post" class="flex font-bold">
+      <div class="flex flex-col">
+        <div class="space-x-4 flex">
+          <div>
+            <label for="betAmount">Bet Amount:</label>
+            <input type="number" id="betAmount" name="betAmount" min="1" required
+              class="px-4 py-1 outline-none border border-black">
+          </div>
+          <div>
+            <label for="directionDropdown">Direction:</label>
+            <select id="directionDropdown" name="directionDropdown">
+              <option value="up">High</option>
+              <option value="down">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="py-4 w-full justify-center flex ">
+          <button type="button" class="bg-orange-400 text-white  rounded px-4 py-2 w-full" id="placeBetBtn"> Trade</button>
+        </div>
+        <div class="text-red-600">
+          <p id="notification"></p>
+          <p id="countdownDisplay"></p>
+
+        </div> <!-- Notification message -->
+        <div>
+          <p>Free <span class="textcolor font-bold" >TRIAL</span> available , Let's try your  <span class="textcolor font-bold" >LUCK!!</span></p>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="footer bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white py-2 text-center ">
+    <a href="https://t.me/hashe786" class="">Contact us: <i class="fab fa-telegram-plane fa-2x"></i></a>
+</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ctx = document.getElementById('randomChart').getContext('2d');
+      let lastBetResult = null;
+      let isBetPlaced = false; // Track if a bet is placed
+      let totalBets = 0;
+      let wins = 0;
+
+      const initialData = {
+        labels: Array.from({ length: 20 }, (_, i) => i),
+        datasets: [{
+          label: 'BTCUSDT',
+          data: Array.from({ length: 10 }, () => Math.random() * 100),
+          borderColor: 'rgba(239, 192, 192, 1)',
+          borderWidth: 2,
+         
+        }],
+      };
+
+      const config = {
+        type: 'line',
+        data: initialData,
+        options: {
+          scales: {
+            x: {
+              type: 'linear',
+              position: 'bottom',
+            },
+            y: {
+              type: 'linear',
+              position: 'left',
+            },
+          },
+        },
+      };
+
+      const randomChart = new Chart(ctx, config);
+
+      function updateChart() {
+        const newDataPoint = Math.random() * 100;
+
+        initialData.labels.push(initialData.labels.length);
+        initialData.datasets[0].data.push(newDataPoint);
+
+        if (initialData.labels.length > 100) {
+          initialData.labels.shift();
+          initialData.datasets[0].data.shift();
+        }
+
+        randomChart.data.labels = [...initialData.labels];
+        randomChart.data.datasets[0].data = [...initialData.datasets[0].data];
+        randomChart.update();
+      }
+
+      function displayNotification(message) {
+        const notificationDisplay = document.getElementById('notification');
+        notificationDisplay.textContent = message;
+      }
+
+      function startCountdown() {
+        let countdown = 180;
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        countdownDisplay.textContent = `Time remaining: ${countdown} seconds`;
+
+        const countdownInterval = setInterval(() => {
+          countdown--;
+
+          if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            placeBet();
+          } else {
+            countdownDisplay.textContent = `Time remaining: ${countdown} seconds`;
+          }
+        }, 1000);
+      }
+
+      function placeBet() {
+        const betAmount = parseInt(document.getElementById('betAmount').value);
+        const direction = document.getElementById('directionDropdown').value;
+
+        if (betAmount <= 0 || isNaN(betAmount)) {
+          displayNotification('Please enter a valid bet amount.');
+          return;
+        }
+
+        // Simulate the win/loss result (you can replace this logic with your actual game logic)
+        const currentPrice = initialData.datasets[0].data[initialData.datasets[0].data.length - 1];
+        const isCorrectPrediction = (direction === 'up' && currentPrice > initialData.datasets[0].data[initialData.datasets[0].data.length - 2]) ||
+          (direction === 'down' && currentPrice < initialData.datasets[0].data[initialData.datasets[0].data.length - 2]);
+
+        totalBets++;
+
+        if (isCorrectPrediction && Math.random() < 0.9) { // 90% win probability
+          lastBetResult = true;
+          wins++;
+          displayNotification('You win!');
+        } else if (!isCorrectPrediction && Math.random() >= 0.1) { // 10% win probability when the prediction is incorrect
+          lastBetResult = true;
+          wins++;
+          displayNotification('You lose!');
+        } else {
+          lastBetResult = false;
+          displayNotification('You lose!');
+        }
+
+        isBetPlaced = true; // Mark that a bet is placed
+        updateChart(); // Update the chart after placing the bet
+        // Reload the page after the bet is finished
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      }
+
+      document.getElementById('placeBetBtn').addEventListener('click', () => {
+        startCountdown();
+      });
+
+      // Display win percentage
+      window.addEventListener('unload', () => {
+        if (totalBets > 0) {
+          const winPercentage = (wins / totalBets) * 100;
+          displayNotification(`You won ${winPercentage.toFixed(2)}% of the bets.`);
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
